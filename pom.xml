@@ -48,7 +48,7 @@
         <netbeans.inceptionYear>2016</netbeans.inceptionYear>
 
         <!-- Build Dependency Versions -->
-        <testify.version>0.9.3</testify.version>
+        <testify.version>0.9.4-SNAPSHOT</testify.version>
         <buildtools.version>0.9.6-SNAPSHOT</buildtools.version>
 
         <!-- Plugin Versions -->
