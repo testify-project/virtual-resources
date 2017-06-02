@@ -35,7 +35,6 @@ import org.testifyproject.VirtualResourceInstance;
 import org.testifyproject.annotation.VirtualResource;
 import org.testifyproject.core.DefaultTestContextBuilder;
 import org.testifyproject.core.util.ReflectionUtil;
-import static org.testifyproject.virtualresource.docker.DockerVirtualResourceProvider.DEFAULT_DAEMON_URI;
 
 /**
  *
@@ -94,7 +93,7 @@ public class DockerVirtualResourceProviderTest {
         given(testContext.getTestName()).willReturn("TestClass");
         given(testContext.getMethodName()).willReturn("testMethod");
 
-        DefaultDockerClient.Builder builder = DefaultDockerClient.builder().uri(DEFAULT_DAEMON_URI);
+        DefaultDockerClient.Builder builder = DefaultDockerClient.fromEnv();
         VirtualResourceInstance result = sut.start(testContext, virtualResource, builder);
 
         assertThat(result).isNotNull();
