@@ -15,6 +15,8 @@
  */
 package org.testifyproject.virtualresource.docker;
 
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.After;
@@ -33,8 +35,6 @@ import org.testifyproject.VirtualResourceInstance;
 import org.testifyproject.annotation.VirtualResource;
 import org.testifyproject.core.DefaultTestContextBuilder;
 import org.testifyproject.core.util.ReflectionUtil;
-import org.testifyproject.spotify.docker.client.DefaultDockerClient;
-import org.testifyproject.spotify.docker.client.exceptions.DockerCertificateException;
 import static org.testifyproject.virtualresource.docker.DockerVirtualResourceProvider.DEFAULT_DAEMON_URI;
 
 /**

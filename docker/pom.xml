@@ -38,13 +38,19 @@
     <dependencies>
         <dependency>
             <groupId>org.testifyproject.external</groupId>
-            <artifactId>external-docker-client</artifactId>
+            <artifactId>external-failsafe</artifactId>
             <version>${buildtools.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.testifyproject.external</groupId>
-            <artifactId>external-failsafe</artifactId>
-            <version>${buildtools.version}</version>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-client</artifactId>
+            <version>8.4.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>
