@@ -93,7 +93,7 @@ public class DockerVirtualResourceProviderTest {
         given(testContext.getTestName()).willReturn("TestClass");
         given(testContext.getMethodName()).willReturn("testMethod");
 
-        DefaultDockerClient.Builder builder = DefaultDockerClient.fromEnv();
+        DefaultDockerClient.Builder builder = DefaultDockerClient.builder().uri("unix:///var/run/docker.sock");
         VirtualResourceInstance result = sut.start(testContext, virtualResource, builder);
 
         assertThat(result).isNotNull();
