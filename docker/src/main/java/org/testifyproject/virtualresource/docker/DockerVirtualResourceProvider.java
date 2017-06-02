@@ -18,7 +18,6 @@ package org.testifyproject.virtualresource.docker;
 import com.google.common.collect.ImmutableMap;
 import com.spotify.docker.client.AnsiProgressHandler;
 import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
@@ -62,11 +61,7 @@ public class DockerVirtualResourceProvider
 
     @Override
     public DefaultDockerClient.Builder configure(TestContext testContext) {
-        try {
-            return DefaultDockerClient.fromEnv();
-        } catch (DockerCertificateException e) {
-            throw ExceptionUtil.INSTANCE.propagate(e);
-        }
+        return DefaultDockerClient.builder().uri("unix:///var/run/docker.sock");
     }
 
     @Override
