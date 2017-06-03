@@ -17,10 +17,12 @@ package org.testifyproject.virtualresource.docker;
 
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
+import com.spotify.docker.client.exceptions.DockerException;
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.BDDMockito.given;
@@ -61,11 +63,27 @@ public class DockerVirtualResourceProviderTest {
     }
 
     @Test
+    public void testClient() throws DockerCertificateException, DockerException, InterruptedException {
+        System.out.println("Creating client from env");
+        System.out.flush();
+        // Create a client based on DOCKER_HOST and DOCKER_CERT_PATH env vars
+        DefaultDockerClient client = DefaultDockerClient.fromEnv().build();
+        System.out.println("Pulling postgres image");
+        System.out.flush();
+        client.pull("postgres");
+        
+        System.out.println("Image pulled");
+        System.out.flush();
+    }
+
+    @Ignore
+    @Test
     public void callToConfigureShouldReturnBuilder() {
         DefaultDockerClient.Builder result = sut.configure(testContext);
         assertThat(result).isNotNull();
     }
 
+    @Ignore
     @Test
     public void givenValidParametersCallToStartAndStopContainerShouldSucceed() throws DockerCertificateException {
         StartStrategy resourceStartStrategy = StartStrategy.EAGER;
