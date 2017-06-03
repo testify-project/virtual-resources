@@ -15,9 +15,12 @@
  */
 package org.testifyproject.virtualresource.docker;
 
+import com.spotify.docker.client.AnsiProgressHandler;
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
+import com.spotify.docker.client.messages.RegistryAuth;
+import com.spotify.docker.client.messages.RegistryAuthSupplier;
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.After;
@@ -37,6 +40,9 @@ import org.testifyproject.VirtualResourceInstance;
 import org.testifyproject.annotation.VirtualResource;
 import org.testifyproject.core.DefaultTestContextBuilder;
 import org.testifyproject.core.util.ReflectionUtil;
+import org.testifyproject.core.util.SettingUtil;
+import org.testifyproject.trait.DefaultPropertiesReader;
+import org.testifyproject.trait.PropertiesReader;
 
 /**
  *
@@ -62,16 +68,25 @@ public class DockerVirtualResourceProviderTest {
         sut.stop(testContext, virtualResource);
     }
 
+    @Ignore
     @Test
     public void testClient() throws DockerCertificateException, DockerException, InterruptedException {
         System.out.println("Creating client from env");
         System.out.flush();
+        RegistryAuth registryAuth = RegistryAuth.builder()
+                .email("testifybot@gmail.com")
+                .username("testifybot")
+                .password("testifybot743")
+                .serverAddress("https://registry.hub.docker.com/v1/")
+                .build();
         // Create a client based on DOCKER_HOST and DOCKER_CERT_PATH env vars
         DefaultDockerClient client = DefaultDockerClient.fromEnv().build();
         System.out.println("Pulling postgres image");
         System.out.flush();
-        client.pull("postgres");
-        
+        AnsiProgressHandler progressHandler = new AnsiProgressHandler();
+
+        client.pull("postgres", registryAuth, progressHandler);
+
         System.out.println("Image pulled");
         System.out.flush();
     }
@@ -83,7 +98,6 @@ public class DockerVirtualResourceProviderTest {
         assertThat(result).isNotNull();
     }
 
-    @Ignore
     @Test
     public void givenValidParametersCallToStartAndStopContainerShouldSucceed() throws DockerCertificateException {
         StartStrategy resourceStartStrategy = StartStrategy.EAGER;
@@ -92,7 +106,7 @@ public class DockerVirtualResourceProviderTest {
         TestDescriptor testDescriptor = mock(TestDescriptor.class);
         TestConfigurer testConfigurer = mock(TestConfigurer.class);
         MockProvider mockProvider = mock(MockProvider.class);
-        Map<String, Object> properties = mock(Map.class);
+        Map<String, Object> properties = SettingUtil.INSTANCE.getSettings();
         Map<String, String> dependencies = mock(Map.class);
 
         testContext = new DefaultTestContextBuilder()
@@ -111,7 +125,22 @@ public class DockerVirtualResourceProviderTest {
         given(testContext.getTestName()).willReturn("TestClass");
         given(testContext.getMethodName()).willReturn("testMethod");
 
-        DefaultDockerClient.Builder builder = DefaultDockerClient.builder().uri("unix:///var/run/docker.sock");
+        PropertiesReader reader = new DefaultPropertiesReader(properties);
+        String uri = reader.getProperty("uri");
+        String email = reader.getProperty("email");
+        String username = reader.getProperty("username");
+        String password = reader.getProperty("password");
+
+        RegistryAuth registryAuth = RegistryAuth.builder()
+                .email(email)
+                .username(username)
+                .password(password)
+                .serverAddress(uri)
+                .build();
+
+        RegistryAuthSupplier dockerHubAuthSupplier = new DockerHubAuthSupplier(registryAuth);
+        DefaultDockerClient.Builder builder = DefaultDockerClient.fromEnv()
+                .registryAuthSupplier(dockerHubAuthSupplier);
         VirtualResourceInstance result = sut.start(testContext, virtualResource, builder);
 
         assertThat(result).isNotNull();

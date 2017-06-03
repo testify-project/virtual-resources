@@ -18,12 +18,15 @@ package org.testifyproject.virtualresource.docker;
 import com.google.common.collect.ImmutableMap;
 import com.spotify.docker.client.AnsiProgressHandler;
 import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.exceptions.DockerException;
 import com.spotify.docker.client.messages.ContainerConfig;
 import com.spotify.docker.client.messages.ContainerCreation;
 import com.spotify.docker.client.messages.ContainerInfo;
 import com.spotify.docker.client.messages.HostConfig;
 import com.spotify.docker.client.messages.PortBinding;
+import com.spotify.docker.client.messages.RegistryAuth;
+import com.spotify.docker.client.messages.RegistryAuthSupplier;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -44,6 +47,7 @@ import org.testifyproject.failsafe.Failsafe;
 import org.testifyproject.failsafe.RetryPolicy;
 import org.testifyproject.guava.common.net.InetAddresses;
 import org.testifyproject.tools.Discoverable;
+import org.testifyproject.trait.PropertiesReader;
 
 /**
  * A Docker implementation of {@link VirtualResourceProvider SPI Contract}.
@@ -61,7 +65,26 @@ public class DockerVirtualResourceProvider
 
     @Override
     public DefaultDockerClient.Builder configure(TestContext testContext) {
-        return DefaultDockerClient.builder().uri("unix:///var/run/docker.sock");
+        try {
+            PropertiesReader reader = testContext.getPropertiesReader("docker");
+            String uri = reader.getProperty("uri");
+            String email = reader.getProperty("email");
+            String username = reader.getProperty("username");
+            String password = reader.getProperty("password");
+
+            RegistryAuth registryAuth = RegistryAuth.builder()
+                    .email(email)
+                    .username(username)
+                    .password(password)
+                    .serverAddress(uri)
+                    .build();
+
+            RegistryAuthSupplier dockerHubAuthSupplier = new DockerHubAuthSupplier(registryAuth);
+
+            return DefaultDockerClient.fromEnv().registryAuthSupplier(dockerHubAuthSupplier);
+        } catch (DockerCertificateException e) {
+            throw ExceptionUtil.INSTANCE.propagate(e);
+        }
     }
 
     @Override
