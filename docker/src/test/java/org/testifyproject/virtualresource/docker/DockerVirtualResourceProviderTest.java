@@ -68,24 +68,21 @@ public class DockerVirtualResourceProviderTest {
         sut.stop(testContext, virtualResource);
     }
 
-    @Ignore
     @Test
     public void testClient() throws DockerCertificateException, DockerException, InterruptedException {
         System.out.println("Creating client from env");
         System.out.flush();
-        RegistryAuth registryAuth = RegistryAuth.builder()
-                .email("testifybot@gmail.com")
-                .username("testifybot")
-                .password("testifybot743")
-                .serverAddress("https://registry.hub.docker.com/v1/")
+
+        DefaultDockerClient client = DefaultDockerClient.fromEnv()
+                .connectTimeoutMillis(10000)
+                .connectionPoolSize(16)
                 .build();
-        // Create a client based on DOCKER_HOST and DOCKER_CERT_PATH env vars
-        DefaultDockerClient client = DefaultDockerClient.fromEnv().build();
+
         System.out.println("Pulling postgres image");
         System.out.flush();
         AnsiProgressHandler progressHandler = new AnsiProgressHandler();
 
-        client.pull("postgres", registryAuth, progressHandler);
+        client.pull("postgres", progressHandler);
 
         System.out.println("Image pulled");
         System.out.flush();
@@ -98,6 +95,7 @@ public class DockerVirtualResourceProviderTest {
         assertThat(result).isNotNull();
     }
 
+    @Ignore
     @Test
     public void givenValidParametersCallToStartAndStopContainerShouldSucceed() throws DockerCertificateException {
         StartStrategy resourceStartStrategy = StartStrategy.EAGER;
@@ -126,10 +124,11 @@ public class DockerVirtualResourceProviderTest {
         given(testContext.getMethodName()).willReturn("testMethod");
 
         PropertiesReader reader = new DefaultPropertiesReader(properties);
-        String uri = reader.getProperty("uri");
-        String email = reader.getProperty("email");
-        String username = reader.getProperty("username");
-        String password = reader.getProperty("password");
+        PropertiesReader dockerReader = reader.getPropertiesReader("docker");
+        String uri = dockerReader.getProperty("uri");
+        String email = dockerReader.getProperty("email");
+        String username = dockerReader.getProperty("username");
+        String password = dockerReader.getProperty("password");
 
         RegistryAuth registryAuth = RegistryAuth.builder()
                 .email(email)
