@@ -285,10 +285,10 @@ public class DockerVirtualResourceProvider
         Failsafe.with(retryPolicy)
                 .onRetry(throwable -> LoggingUtil.INSTANCE.info("Trying to stop Docker Container '{}'", containerId))
                 .onSuccess(result -> {
-                    LoggingUtil.INSTANCE.info("Docker Container '{}' stop", containerId);
+                    LoggingUtil.INSTANCE.info("Docker Container '{}' stopped", containerId);
                     removeContainer(containerId, retryPolicy);
                 })
-                .onFailure(throwable -> LoggingUtil.INSTANCE.error("Docker Container '{}' could not be stop", containerId, throwable))
+                .onFailure(throwable -> LoggingUtil.INSTANCE.error("Docker Container '{}' could not be stopped", containerId, throwable))
                 .run(() -> client.stopContainer(containerId, 8));
     }
 
