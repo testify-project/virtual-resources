@@ -15,21 +15,21 @@
  */
 package org.testifyproject.virtualresource.docker;
 
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.RegistryAuth;
-import com.spotify.docker.client.messages.RegistryAuthSupplier;
-import com.spotify.docker.client.messages.RegistryConfigs;
+import org.testifyproject.spotify.docker.client.exceptions.DockerException;
+import org.testifyproject.spotify.docker.client.messages.RegistryAuth;
+import org.testifyproject.spotify.docker.client.messages.RegistryAuthSupplier;
+import org.testifyproject.spotify.docker.client.messages.RegistryConfigs;
 
 /**
  * Docker hub authentication supplier implementation.
  *
  * @author saden
  */
-public class DockerHubAuthSupplier implements RegistryAuthSupplier {
+public class DockerHubRegistryAuthSupplier implements RegistryAuthSupplier {
 
     private final RegistryAuth registryAuth;
 
-    DockerHubAuthSupplier(RegistryAuth registryAuth) {
+    DockerHubRegistryAuthSupplier(RegistryAuth registryAuth) {
         this.registryAuth = registryAuth;
     }
 

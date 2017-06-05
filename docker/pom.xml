@@ -42,9 +42,9 @@
             <version>${buildtools.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.spotify</groupId>
-            <artifactId>docker-client</artifactId>
-            <version>8.6.2</version>
+            <groupId>org.testifyproject.external</groupId>
+            <artifactId>external-docker-client</artifactId>
+            <version>${buildtools.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>

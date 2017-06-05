@@ -15,18 +15,6 @@
  */
 package org.testifyproject.virtualresource.docker;
 
-import com.google.common.collect.ImmutableMap;
-import com.spotify.docker.client.AnsiProgressHandler;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
-import com.spotify.docker.client.messages.ContainerInfo;
-import com.spotify.docker.client.messages.HostConfig;
-import com.spotify.docker.client.messages.PortBinding;
-import com.spotify.docker.client.messages.RegistryAuth;
-import com.spotify.docker.client.messages.RegistryAuthSupplier;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -45,7 +33,19 @@ import org.testifyproject.core.util.ExceptionUtil;
 import org.testifyproject.core.util.LoggingUtil;
 import org.testifyproject.failsafe.Failsafe;
 import org.testifyproject.failsafe.RetryPolicy;
+import org.testifyproject.google.common.collect.ImmutableMap;
 import org.testifyproject.guava.common.net.InetAddresses;
+import org.testifyproject.spotify.docker.client.AnsiProgressHandler;
+import org.testifyproject.spotify.docker.client.DefaultDockerClient;
+import org.testifyproject.spotify.docker.client.exceptions.DockerCertificateException;
+import org.testifyproject.spotify.docker.client.exceptions.DockerException;
+import org.testifyproject.spotify.docker.client.messages.ContainerConfig;
+import org.testifyproject.spotify.docker.client.messages.ContainerCreation;
+import org.testifyproject.spotify.docker.client.messages.ContainerInfo;
+import org.testifyproject.spotify.docker.client.messages.HostConfig;
+import org.testifyproject.spotify.docker.client.messages.PortBinding;
+import org.testifyproject.spotify.docker.client.messages.RegistryAuth;
+import org.testifyproject.spotify.docker.client.messages.RegistryAuthSupplier;
 import org.testifyproject.tools.Discoverable;
 import org.testifyproject.trait.PropertiesReader;
 
@@ -56,7 +56,7 @@ import org.testifyproject.trait.PropertiesReader;
  */
 @Discoverable
 public class DockerVirtualResourceProvider
-        implements VirtualResourceProvider<VirtualResource, DefaultDockerClient.Builder> {
+        implements VirtualResourceProvider<DefaultDockerClient.Builder> {
 
     public static final String DEFAULT_VERSION = "latest";
     private DefaultDockerClient client;
@@ -64,24 +64,28 @@ public class DockerVirtualResourceProvider
     private ContainerInfo containerInfo;
 
     @Override
-    public DefaultDockerClient.Builder configure(TestContext testContext) {
+    public DefaultDockerClient.Builder configure(TestContext testContext, VirtualResource virtualResource) {
         try {
+            DefaultDockerClient.Builder builder = DefaultDockerClient.fromEnv();
             PropertiesReader reader = testContext.getPropertiesReader("docker");
-            String uri = reader.getProperty("uri");
-            String email = reader.getProperty("email");
-            String username = reader.getProperty("username");
-            String password = reader.getProperty("password");
 
-            RegistryAuth registryAuth = RegistryAuth.builder()
-                    .email(email)
-                    .username(username)
-                    .password(password)
-                    .serverAddress(uri)
-                    .build();
+            if (!reader.isEmpty()) {
+                RegistryAuth registryAuth = RegistryAuth.builder()
+                        .serverAddress(reader.getProperty("uri"))
+                        .email(reader.getProperty("email"))
+                        .username(reader.getProperty("username"))
+                        .password(reader.getProperty("password"))
+                        .build();
 
-            RegistryAuthSupplier dockerHubAuthSupplier = new DockerHubAuthSupplier(registryAuth);
+                RegistryAuthSupplier dockerHubAuthSupplier = new DockerHubRegistryAuthSupplier(registryAuth);
 
-            return DefaultDockerClient.fromEnv().registryAuthSupplier(dockerHubAuthSupplier);
+                //TODO: explore making these configuration configurable via .testify.yml file
+                builder.registryAuthSupplier(dockerHubAuthSupplier)
+                        .connectTimeoutMillis(10000)
+                        .connectionPoolSize(16);
+            }
+
+            return builder;
         } catch (DockerCertificateException e) {
             throw ExceptionUtil.INSTANCE.propagate(e);
         }

@@ -15,17 +15,10 @@
  */
 package org.testifyproject.virtualresource.docker;
 
-import com.spotify.docker.client.AnsiProgressHandler;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.RegistryAuth;
-import com.spotify.docker.client.messages.RegistryAuthSupplier;
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.BDDMockito.given;
@@ -41,6 +34,10 @@ import org.testifyproject.annotation.VirtualResource;
 import org.testifyproject.core.DefaultTestContextBuilder;
 import org.testifyproject.core.util.ReflectionUtil;
 import org.testifyproject.core.util.SettingUtil;
+import org.testifyproject.spotify.docker.client.DefaultDockerClient;
+import org.testifyproject.spotify.docker.client.exceptions.DockerCertificateException;
+import org.testifyproject.spotify.docker.client.messages.RegistryAuth;
+import org.testifyproject.spotify.docker.client.messages.RegistryAuthSupplier;
 import org.testifyproject.trait.DefaultPropertiesReader;
 import org.testifyproject.trait.PropertiesReader;
 
@@ -69,33 +66,16 @@ public class DockerVirtualResourceProviderTest {
     }
 
     @Test
-    public void testClient() throws DockerCertificateException, DockerException, InterruptedException {
-        System.out.println("Creating client from env");
-        System.out.flush();
-
-        DefaultDockerClient client = DefaultDockerClient.fromEnv()
-                .connectTimeoutMillis(10000)
-                .connectionPoolSize(16)
-                .build();
-
-        System.out.println("Pulling postgres image");
-        System.out.flush();
-        AnsiProgressHandler progressHandler = new AnsiProgressHandler();
-
-        client.pull("postgres", progressHandler);
-
-        System.out.println("Image pulled");
-        System.out.flush();
-    }
-
-    @Ignore
-    @Test
     public void callToConfigureShouldReturnBuilder() {
-        DefaultDockerClient.Builder result = sut.configure(testContext);
+        PropertiesReader reader = mock(PropertiesReader.class);
+
+        given(testContext.getPropertiesReader("docker")).willReturn(reader);
+        given(reader.isEmpty()).willReturn(false);
+
+        DefaultDockerClient.Builder result = sut.configure(testContext, virtualResource);
         assertThat(result).isNotNull();
     }
 
-    @Ignore
     @Test
     public void givenValidParametersCallToStartAndStopContainerShouldSucceed() throws DockerCertificateException {
         StartStrategy resourceStartStrategy = StartStrategy.EAGER;
@@ -125,19 +105,15 @@ public class DockerVirtualResourceProviderTest {
 
         PropertiesReader reader = new DefaultPropertiesReader(properties);
         PropertiesReader dockerReader = reader.getPropertiesReader("docker");
-        String uri = dockerReader.getProperty("uri");
-        String email = dockerReader.getProperty("email");
-        String username = dockerReader.getProperty("username");
-        String password = dockerReader.getProperty("password");
 
         RegistryAuth registryAuth = RegistryAuth.builder()
-                .email(email)
-                .username(username)
-                .password(password)
-                .serverAddress(uri)
+                .email(dockerReader.getProperty("email"))
+                .username(dockerReader.getProperty("username"))
+                .password(dockerReader.getProperty("password"))
+                .serverAddress(dockerReader.getProperty("uri"))
                 .build();
 
-        RegistryAuthSupplier dockerHubAuthSupplier = new DockerHubAuthSupplier(registryAuth);
+        RegistryAuthSupplier dockerHubAuthSupplier = new DockerHubRegistryAuthSupplier(registryAuth);
         DefaultDockerClient.Builder builder = DefaultDockerClient.fromEnv()
                 .registryAuthSupplier(dockerHubAuthSupplier);
         VirtualResourceInstance result = sut.start(testContext, virtualResource, builder);

@@ -25,8 +25,6 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     ssh-add testifybot_rsa
 fi
 
-echo "MAVEN_OPTS='-client -Xms512m -Xmx2048m'" > ~/.mavenrc
-
 echo "Installing Docker version $DOCKER_VERSION"
 # install the version of docker in the DOCKER_VERSION env var
 ./docker.sh install_docker
