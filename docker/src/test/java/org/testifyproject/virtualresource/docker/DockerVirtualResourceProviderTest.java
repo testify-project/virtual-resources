@@ -99,7 +99,7 @@ public class DockerVirtualResourceProviderTest {
                 .build();
 
         given(virtualResource.value()).willReturn("postgres");
-        given(virtualResource.version()).willReturn("9.4");
+        given(virtualResource.version()).willReturn("9.4.12");
         given(testContext.getTestName()).willReturn("TestClass");
         given(testContext.getMethodName()).willReturn("testMethod");
 
