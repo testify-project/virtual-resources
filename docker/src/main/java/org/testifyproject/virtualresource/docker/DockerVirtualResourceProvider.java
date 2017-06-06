@@ -58,16 +58,22 @@ import org.testifyproject.trait.PropertiesReader;
 public class DockerVirtualResourceProvider
         implements VirtualResourceProvider<DefaultDockerClient.Builder> {
 
+    public static final String DEFAULT_CONFIG_KEY = "docker";
     public static final String DEFAULT_VERSION = "latest";
+
     private DefaultDockerClient client;
     private final AtomicBoolean started = new AtomicBoolean(false);
     private ContainerInfo containerInfo;
 
     @Override
-    public DefaultDockerClient.Builder configure(TestContext testContext, VirtualResource virtualResource) {
+    public DefaultDockerClient.Builder configure(TestContext testContext, VirtualResource virtualResource, PropertiesReader configReader) {
         try {
             DefaultDockerClient.Builder builder = DefaultDockerClient.fromEnv();
-            PropertiesReader reader = testContext.getPropertiesReader("docker");
+            PropertiesReader reader = configReader;
+
+            if (reader.isEmpty()) {
+                reader = testContext.getPropertiesReader(DEFAULT_CONFIG_KEY);
+            }
 
             if (!reader.isEmpty()) {
                 RegistryAuth registryAuth = RegistryAuth.builder()
@@ -146,11 +152,10 @@ public class DockerVirtualResourceProvider
             }
 
             return VirtualResourceInstanceBuilder.builder()
-                    .fqn(imageName)
                     .resource(containerAddress, InetAddress.class)
                     .property(DockerProperties.DOCKER_CLIENT, client)
                     .property(DockerProperties.DOCKER_CONTAINER, containerInfo)
-                    .build();
+                    .build(imageName);
         } catch (InterruptedException | DockerException e) {
             throw ExceptionUtil.INSTANCE.propagate(e);
         } finally {

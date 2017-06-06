@@ -68,11 +68,13 @@ public class DockerVirtualResourceProviderTest {
     @Test
     public void callToConfigureShouldReturnBuilder() {
         PropertiesReader reader = mock(PropertiesReader.class);
+        PropertiesReader configReader = mock(PropertiesReader.class);
 
+        given(configReader.isEmpty()).willReturn(true);
         given(testContext.getPropertiesReader("docker")).willReturn(reader);
         given(reader.isEmpty()).willReturn(false);
 
-        DefaultDockerClient.Builder result = sut.configure(testContext, virtualResource);
+        DefaultDockerClient.Builder result = sut.configure(testContext, virtualResource, configReader);
         assertThat(result).isNotNull();
     }
 
