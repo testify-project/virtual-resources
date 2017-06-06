@@ -13,7 +13,7 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 
-## [0.9.0]
+## [0.9.0] - 2017-06-06
 
 ### Added
 - Virtual Resources parent project
