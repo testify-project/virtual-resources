@@ -104,7 +104,7 @@ public class DockerVirtualResourceProvider
             boolean imagePulled = isImagePulled(image, imageTag);
 
             if (virtualResource.pull() && !imagePulled) {
-                pullImage(virtualResource, image, imageName, imageTag);
+                pullImage(virtualResource, image);
             }
 
             ContainerConfig.Builder containerConfigBuilder = ContainerConfig.builder()
@@ -238,10 +238,8 @@ public class DockerVirtualResourceProvider
      *
      * @param virtualResource the virtual resource
      * @param image the image
-     * @param imageName the image name
-     * @param imageTag the image tag
      */
-    void pullImage(VirtualResource virtualResource, String image, String imageName, String imageTag) {
+    void pullImage(VirtualResource virtualResource, String image) {
         RetryPolicy retryPolicy = new RetryPolicy()
                 .retryOn(Throwable.class)
                 .withBackoff(virtualResource.delay(), virtualResource.maxDelay(), virtualResource.unit())
@@ -250,7 +248,7 @@ public class DockerVirtualResourceProvider
         Failsafe.with(retryPolicy)
                 .onRetry(throwable -> LoggingUtil.INSTANCE.warn("Retrying pull request of image '{}'", image, throwable))
                 .onFailure(throwable -> LoggingUtil.INSTANCE.error("Image image '{}' could not be pulled: ", image, throwable))
-                .run(() -> client.pull(imageName, new AnsiProgressHandler()));
+                .run(() -> client.pull(image, new AnsiProgressHandler()));
     }
 
     /**

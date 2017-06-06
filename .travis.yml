@@ -17,13 +17,13 @@ cache:
     apt: true
     pip: true
     directories:
-        - $HOME/.m2
+     - $HOME/.m2
 
 addons:
     apt:
         packages:
-            - gnupg
-            - net-tools
+         - gnupg
+         - net-tools
             
 env:
   global:
