@@ -1,4 +1,3 @@
-
 #!/bin/bash
 set -e
 
@@ -31,27 +30,19 @@ case "$1" in
         dist_version="$(lsb_release --codename | cut -f2)"
         sudo sh -c "echo deb [arch=$(dpkg --print-architecture)] https://apt.dockerproject.org/repo ubuntu-${dist_version} testing >> /etc/apt/sources.list.d/docker.list"
     fi
-
     sudo apt-get -qq update
     sudo apt-get -q -y purge docker-engine
     apt-cache policy docker-engine
     sudo apt-get -q -y install docker-engine=$DOCKER_VERSION* "linux-image-extra-$(uname -r)"
 
     # set DOCKER_OPTS to make sure docker listens on the ports we intend
-    #echo 'DOCKER_OPTS="-D=true -H=unix:///var/run/docker.sock -H=tcp://127.0.0.1:2375"' | sudo tee -a /etc/default/docker
+    echo 'DOCKER_OPTS="-D=true -H=unix:///var/run/docker.sock -H=tcp://127.0.0.1:2375"' | sudo tee -a /etc/default/docker
 
     if [[ "$DOCKER_VERSION" =~ ^1\.9\..* && ! $(mount | grep /dev/mqueue) ]]; then
       # docker-engine 1.9.x doesn't mount /dev/mqueue which is necessary to test `--ipc=host`
       sudo mkdir -p /dev/mqueue
       sudo mount -t mqueue none /dev/mqueue
     fi
-  
-    echo "Creating Docker '/etc/docker/daemon.json' configuration file"
-    echo '{"hosts": ["unix:///var/run/docker.sock", "tcp://127.0.0.1:2375"]}' | sudo tee -a /etc/docker/daemon.json
-
-    echo "Removing host configuration from Docker Service ExecStart Command"
-    sudo cat /lib/systemd/system/docker.service
-    sudo sed -i 's/ExecStart=.*/ExecStart=\/usr\/bin\/dockerd/g' /lib/systemd/system/docker.service
 
     # restart the service for the /etc/default/docker change we made after
     # installing the package
