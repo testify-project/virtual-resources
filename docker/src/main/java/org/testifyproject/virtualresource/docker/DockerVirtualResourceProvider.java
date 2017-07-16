@@ -157,7 +157,7 @@ public class DockerVirtualResourceProvider
                     .resource(containerAddress, InetAddress.class)
                     .property(DockerProperties.DOCKER_CLIENT, client)
                     .property(DockerProperties.DOCKER_CONTAINER, containerInfo)
-                    .build(imageName);
+                    .build(image);
 
             return virtualResourceInstance;
         } catch (InterruptedException | DockerException e) {
