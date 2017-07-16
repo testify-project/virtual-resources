@@ -31,7 +31,7 @@ env:
     - DOCKER_VERSION=1.11.2
     - DOCKER_VERSION=1.12.6
     - DOCKER_VERSION=1.13.1
-    - DOCKER_VERSION=17.06.0~ce
+    - DOCKER_VERSION=17.05.0~ce
 
 before_install: ./before_install.sh
 
