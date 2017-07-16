@@ -99,6 +99,8 @@ public class DockerVirtualResourceProvider
 
     @Override
     public VirtualResourceInstance start(TestContext testContext, VirtualResource virtualResource, DefaultDockerClient.Builder clientBuilder) {
+        VirtualResourceInstance virtualResourceInstance = null;
+
         try {
             LoggingUtil.INSTANCE.info("Connecting to {}", clientBuilder.uri());
             client = clientBuilder.build();
@@ -151,20 +153,23 @@ public class DockerVirtualResourceProvider
                 }
             }
 
-            return VirtualResourceInstanceBuilder.builder()
+            virtualResourceInstance = VirtualResourceInstanceBuilder.builder()
                     .resource(containerAddress, InetAddress.class)
                     .property(DockerProperties.DOCKER_CLIENT, client)
                     .property(DockerProperties.DOCKER_CONTAINER, containerInfo)
                     .build(imageName);
+
+            return virtualResourceInstance;
         } catch (InterruptedException | DockerException e) {
             throw ExceptionUtil.INSTANCE.propagate(e);
         } finally {
             //Last ditch effort to stop the container
+            VirtualResourceInstance instance = virtualResourceInstance;
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
                 public void run() {
                     if (started.compareAndSet(true, false)) {
-                        DockerVirtualResourceProvider.this.stop(testContext, virtualResource);
+                        DockerVirtualResourceProvider.this.stop(testContext, virtualResource, instance);
                     }
                 }
             });
@@ -172,7 +177,7 @@ public class DockerVirtualResourceProvider
     }
 
     @Override
-    public void stop(TestContext testContext, VirtualResource virtualResource) {
+    public void stop(TestContext testContext, VirtualResource virtualResource, VirtualResourceInstance instance) {
         try {
             if (started.compareAndSet(true, false)) {
                 String containerId = containerInfo.id();

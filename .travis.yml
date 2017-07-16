@@ -1,5 +1,6 @@
 sudo: required
 dist: trusty
+group: edge
 
 language: java
 
@@ -8,16 +9,14 @@ jdk: oraclejdk8
 services: docker
 
 notifications:
-    email:
-        - builds@fitbur.com
+    email: testifybot@gmail.com
     on-success: change
     on-failure: always
 
 cache:
     apt: true
     pip: true
-    directories:
-     - $HOME/.m2
+    directories: $HOME/.m2
 
 addons:
     apt:
@@ -29,17 +28,13 @@ env:
   global:
      - MAVEN_OPTS="-client -Xms512m -Xmx2048m"
   matrix:
-#    - DOCKER_VERSION=1.9.1
-#    - DOCKER_VERSION=1.10.3
-#    - DOCKER_VERSION=1.11.2
-#    - DOCKER_VERSION=1.12.6 ENABLE_SWARM=1
-    - DOCKER_VERSION=1.13.1 ENABLE_SWARM=1
-#    - DOCKER_VERSION=17.03.0~ce ENABLE_SWARM=1
-#    - DOCKER_VERSION=17.04.0~ce ENABLE_SWARM=1
+    - DOCKER_VERSION=1.11.2
+    - DOCKER_VERSION=1.12.6
+    - DOCKER_VERSION=1.13.1
+    - DOCKER_VERSION=17.05.0~ce
 
-before_install:
-    - ./before_install.sh
-    
+before_install: ./before_install.sh
+
 script: ./script.sh
 
 after_success:
