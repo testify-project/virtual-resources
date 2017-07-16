@@ -13,8 +13,12 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 
-## [0.9.0] - 2017-06-06
+## [0.9.1] - 2017-07-16
+### Changed 
+- Updated Testify API to version 0.9.6
+- Added VirtualResourceInstace parameter to VirtualResourceProvider#stop method
 
+## [0.9.0] - 2017-06-06
 ### Added
 - Virtual Resources parent project
 - Docker based virtual resource provider implementation
