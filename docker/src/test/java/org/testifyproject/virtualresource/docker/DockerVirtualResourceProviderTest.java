@@ -17,7 +17,6 @@ package org.testifyproject.virtualresource.docker;
 
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.mockito.AdditionalAnswers.delegatesTo;
@@ -58,11 +57,6 @@ public class DockerVirtualResourceProviderTest {
         virtualResource = mock(VirtualResource.class, delegatesTo(delegate));
 
         sut = new DockerVirtualResourceProvider();
-    }
-
-    @After
-    public void destroy() {
-        sut.stop(testContext, virtualResource);
     }
 
     @Test
@@ -121,6 +115,9 @@ public class DockerVirtualResourceProviderTest {
         VirtualResourceInstance result = sut.start(testContext, virtualResource, builder);
 
         assertThat(result).isNotNull();
+
+        sut.stop(testContext, virtualResource, result);
+
     }
 
 }

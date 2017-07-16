@@ -48,8 +48,8 @@
         <netbeans.inceptionYear>2016</netbeans.inceptionYear>
 
         <!-- Build Dependency Versions -->
-        <testify.version>0.9.4</testify.version>
-        <buildtools.version>0.9.6</buildtools.version>
+        <testify.version>0.9.6</testify.version>
+        <buildtools.version>0.9.7</buildtools.version>
 
         <!-- Plugin Versions -->
         <plugin.resource>3.0.1</plugin.resource>
@@ -457,6 +457,7 @@
                             <exclude>archetype.properties</exclude>
                             <exclude>.mvn/**</exclude>
                             <exclude>mvnw*</exclude>
+                            <exclude>CODEOWNERS</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
