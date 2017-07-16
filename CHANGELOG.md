@@ -13,7 +13,7 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 
-## [0.9.2-SNAPSHOT] - 2017-07-16
+## [0.9.2] - 2017-07-16
 ### Changed 
 - Updated fully qualified of VirtualResourceInstance from just image name to image name plus image tag (i.e. `postgres:9.4`)
 
