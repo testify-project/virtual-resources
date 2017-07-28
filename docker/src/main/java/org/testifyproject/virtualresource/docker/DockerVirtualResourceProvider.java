@@ -19,10 +19,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import org.testifyproject.TestContext;
 import org.testifyproject.VirtualResourceInstance;
@@ -30,10 +32,10 @@ import org.testifyproject.VirtualResourceProvider;
 import org.testifyproject.annotation.VirtualResource;
 import org.testifyproject.core.VirtualResourceInstanceBuilder;
 import org.testifyproject.core.util.ExceptionUtil;
+import org.testifyproject.core.util.ExpressionUtil;
 import org.testifyproject.core.util.LoggingUtil;
 import org.testifyproject.failsafe.Failsafe;
 import org.testifyproject.failsafe.RetryPolicy;
-import org.testifyproject.google.common.collect.ImmutableMap;
 import org.testifyproject.guava.common.net.InetAddresses;
 import org.testifyproject.spotify.docker.client.AnsiProgressHandler;
 import org.testifyproject.spotify.docker.client.DefaultDockerClient;
@@ -63,7 +65,7 @@ public class DockerVirtualResourceProvider
 
     private DefaultDockerClient client;
     private final AtomicBoolean started = new AtomicBoolean(false);
-    private ContainerInfo containerInfo;
+    private final List<ContainerInfo> containerInfos = new LinkedList();
 
     @Override
     public DefaultDockerClient.Builder configure(TestContext testContext, VirtualResource virtualResource, PropertiesReader configReader) {
@@ -98,69 +100,109 @@ public class DockerVirtualResourceProvider
     }
 
     @Override
+    @SuppressWarnings("UseSpecificCatch")
     public VirtualResourceInstance start(TestContext testContext, VirtualResource virtualResource, DefaultDockerClient.Builder clientBuilder) {
         VirtualResourceInstance virtualResourceInstance = null;
+        int nodes = virtualResource.nodes();
 
         try {
-            LoggingUtil.INSTANCE.info("Connecting to {}", clientBuilder.uri());
-            client = clientBuilder.build();
+            for (int i = 1; i <= nodes; i++) {
+                LoggingUtil.INSTANCE.info("Connecting to {}", clientBuilder.uri());
+                client = clientBuilder.build();
 
-            String imageName = virtualResource.value();
-            String imageTag = getImageTag(virtualResource.version());
+                String imageName = virtualResource.value();
+                String imageTag = getImageTag(virtualResource.version());
 
-            String image = imageName + ":" + imageTag;
-            boolean imagePulled = isImagePulled(image, imageTag);
+                String image = imageName + ":" + imageTag;
+                boolean imagePulled = isImagePulled(image, imageTag);
 
-            if (virtualResource.pull() && !imagePulled) {
-                pullImage(virtualResource, image);
-            }
+                if (virtualResource.pull() && !imagePulled) {
+                    pullImage(virtualResource, image);
+                }
 
-            ContainerConfig.Builder containerConfigBuilder = ContainerConfig.builder()
-                    .image(image);
+                ContainerConfig.Builder containerConfigBuilder
+                        = ContainerConfig.builder().image(image);
 
-            if (!virtualResource.cmd().isEmpty()) {
-                containerConfigBuilder.cmd(virtualResource.cmd());
-            }
+                if (!virtualResource.cmd().isEmpty()) {
+                    containerConfigBuilder.cmd(virtualResource.cmd());
+                }
 
-            String containerName = virtualResource.name().isEmpty() ? null : virtualResource.name();
+                String containerName;
+                if (nodes == 1) {
+                    containerName = virtualResource.name().isEmpty()
+                            ? testContext.getName()
+                            : virtualResource.name();
+                } else {
+                    containerName = virtualResource.name().isEmpty()
+                            ? testContext.getName() + i
+                            : virtualResource.name() + i;
+                }
 
-            HostConfig hostConfig = HostConfig.builder()
-                    .publishAllPorts(true)
-                    .build();
+                HostConfig.Builder hostConfigBuilder = HostConfig.builder();
 
-            ContainerConfig containerConfig = containerConfigBuilder
-                    .hostConfig(hostConfig)
-                    .build();
+                if (virtualResource.link()) {
+                    List<String> containerNames = containerInfos.stream()
+                            .map(p -> p.name().replace("/", ""))
+                            .collect(toList());
 
-            ContainerCreation containerCreation = client.createContainer(containerConfig, containerName);
-            String containerId = containerCreation.id();
-            client.startContainer(containerId);
-            started.compareAndSet(false, true);
+                    hostConfigBuilder.links(containerNames);
+                }
 
-            containerInfo = client.inspectContainer(containerId);
-            InetAddress containerAddress = InetAddresses.forString(containerInfo.networkSettings().ipAddress());
-            ImmutableMap<String, List<PortBinding>> containerPorts = containerInfo.networkSettings().ports();
+                for (String env : virtualResource.env()) {
+                    try {
+                        Map<String, Object> templateContext = containerInfos.stream()
+                                .collect(toMap(p -> p.name().replace("/", ""), p -> p));
+                        String evaluation = ExpressionUtil.INSTANCE.evaluateTemplate(env, templateContext);
+                        containerConfigBuilder.env(evaluation);
+                    } catch (Exception e) {
+                        LoggingUtil.INSTANCE.debug("Could not evaluate env '{}' as an expression ", env);
+                    }
+                }
 
-            if (containerPorts != null) {
-                Map<Integer, Integer> mappedPorts = containerPorts.entrySet().stream()
-                        .collect(collectingAndThen(toMap(
-                                k -> Integer.valueOf(k.getKey().split("/")[0]),
-                                v -> Integer.valueOf(v.getValue().get(0).hostPort())),
-                                Collections::unmodifiableMap));
+                HostConfig hostConfig = hostConfigBuilder
+                        .publishAllPorts(true)
+                        .build();
 
-                if (virtualResource.await()) {
-                    waitForPorts(virtualResource, mappedPorts, containerAddress);
+                ContainerConfig containerConfig = containerConfigBuilder
+                        .hostConfig(hostConfig)
+                        .build();
+
+                ContainerCreation containerCreation = client.createContainer(containerConfig, containerName);
+                String containerId = containerCreation.id();
+                client.startContainer(containerId);
+                started.compareAndSet(false, true);
+
+                ContainerInfo containerInfo = client.inspectContainer(containerId);
+                InetAddress containerAddress = InetAddresses.forString(containerInfo.networkSettings().ipAddress());
+                Map<String, List<PortBinding>> containerPorts = containerInfo.networkSettings().ports();
+
+                containerInfos.add(containerInfo);
+
+                if (containerPorts != null) {
+                    Map<Integer, Integer> mappedPorts = containerPorts.entrySet().stream()
+                            .collect(collectingAndThen(toMap(
+                                    k -> Integer.valueOf(k.getKey().split("/")[0]),
+                                    v -> Integer.valueOf(v.getValue().get(0).hostPort())),
+                                    Collections::unmodifiableMap));
+
+                    if (virtualResource.await()) {
+                        waitForPorts(virtualResource, mappedPorts, containerAddress);
+                    }
+                }
+
+                //return the first node
+                if (i == 1) {
+                    virtualResourceInstance = VirtualResourceInstanceBuilder.builder()
+                            .resource(containerAddress, InetAddress.class)
+                            .property(DockerProperties.DOCKER_CLIENT, client)
+                            .property(DockerProperties.DOCKER_CONTAINER, containerInfo)
+                            .build(image);
                 }
             }
 
-            virtualResourceInstance = VirtualResourceInstanceBuilder.builder()
-                    .resource(containerAddress, InetAddress.class)
-                    .property(DockerProperties.DOCKER_CLIENT, client)
-                    .property(DockerProperties.DOCKER_CONTAINER, containerInfo)
-                    .build(image);
-
             return virtualResourceInstance;
-        } catch (InterruptedException | DockerException e) {
+        } catch (Exception e) {
+            stop(testContext, virtualResource, virtualResourceInstance);
             throw ExceptionUtil.INSTANCE.propagate(e);
         } finally {
             //Last ditch effort to stop the container
@@ -180,16 +222,14 @@ public class DockerVirtualResourceProvider
     public void stop(TestContext testContext, VirtualResource virtualResource, VirtualResourceInstance instance) {
         try {
             if (started.compareAndSet(true, false)) {
-                String containerId = containerInfo.id();
-                LoggingUtil.INSTANCE.info("Stopping and Removing Docker Container {}", containerId);
+                containerInfos.stream().map(p -> p.id()).forEachOrdered(containerId -> {
+                    LoggingUtil.INSTANCE.info("Stopping and Removing Docker Container {}", containerId);
+                    RetryPolicy retryPolicy = new RetryPolicy()
+                            .retryOn(Throwable.class)
+                            .withBackoff(virtualResource.delay(), virtualResource.maxDelay(), virtualResource.unit());
 
-                RetryPolicy retryPolicy = new RetryPolicy()
-                        .retryOn(Throwable.class)
-                        .withBackoff(virtualResource.delay(), virtualResource.maxDelay(), virtualResource.unit())
-                        .withMaxRetries(virtualResource.maxRetries())
-                        .withMaxDuration(virtualResource.maxDuration(), virtualResource.unit());
-
-                stopContainer(containerId, retryPolicy);
+                    stopContainer(containerId, retryPolicy);
+                });
             }
         } finally {
             if (client != null) {
@@ -252,7 +292,7 @@ public class DockerVirtualResourceProvider
     void pullImage(VirtualResource virtualResource, String image) {
         RetryPolicy retryPolicy = new RetryPolicy()
                 .retryOn(Throwable.class)
-                .withBackoff(virtualResource.delay(), virtualResource.maxDelay(), virtualResource.unit())
+                .withDelay(virtualResource.delay(), virtualResource.unit())
                 .withMaxRetries(virtualResource.maxRetries());
 
         Failsafe.with(retryPolicy)
@@ -271,16 +311,23 @@ public class DockerVirtualResourceProvider
     void waitForPorts(VirtualResource virtualResource, Map<Integer, Integer> mappedPorts, InetAddress host) {
         RetryPolicy retryPolicy = new RetryPolicy()
                 .retryOn(IOException.class)
-                .withBackoff(virtualResource.delay(),
-                        virtualResource.maxDelay(),
-                        virtualResource.unit())
-                .withMaxRetries(virtualResource.maxRetries())
-                .withMaxDuration(virtualResource.maxDuration(), virtualResource.unit());
+                .withBackoff(virtualResource.delay(), virtualResource.maxDelay(), virtualResource.unit());
 
-        mappedPorts.entrySet().forEach(entry -> Failsafe.with(retryPolicy).run(() -> {
-            LoggingUtil.INSTANCE.info("Waiting for '{}:{}' to be reachable", host.getHostAddress(), entry.getKey());
-            new Socket(host, entry.getKey()).close();
-        }));
+        //if ports are explicitly defined then wait for those ports
+        int[] ports = virtualResource.ports();
+        if (ports.length != 0) {
+            for (int port : ports) {
+                Failsafe.with(retryPolicy).run(() -> {
+                    LoggingUtil.INSTANCE.info("Waiting for '{}:{}' to be reachable", host.getHostAddress(), port);
+                    new Socket(host, port).close();
+                });
+            }
+        } else {
+            mappedPorts.entrySet().forEach(entry -> Failsafe.with(retryPolicy).run(() -> {
+                LoggingUtil.INSTANCE.info("Waiting for '{}:{}' to be reachable", host.getHostAddress(), entry.getKey());
+                new Socket(host, entry.getKey()).close();
+            }));
+        }
     }
 
     /**
