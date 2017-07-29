@@ -73,7 +73,7 @@ public class DockerVirtualResourceProviderTest {
     }
 
     @Test
-    public void givenValidParametersCallToStartAndStopContainerShouldSucceed() throws DockerCertificateException {
+    public void givenStandardConfigurationStartAndStopContainerShouldSucceed() throws DockerCertificateException {
         StartStrategy resourceStartStrategy = StartStrategy.EAGER;
         Object testInstance = new Object();
         MethodDescriptor methodDescriptor = mock(MethodDescriptor.class);
@@ -117,7 +117,63 @@ public class DockerVirtualResourceProviderTest {
         assertThat(result).isNotNull();
 
         sut.stop(testContext, virtualResource, result);
+    }
 
+    @Test
+    public void givenMultiNodeConfigurationStartAndStopContainerShouldSucceed() throws DockerCertificateException {
+        StartStrategy resourceStartStrategy = StartStrategy.EAGER;
+        Object testInstance = new Object();
+        MethodDescriptor methodDescriptor = mock(MethodDescriptor.class);
+        TestDescriptor testDescriptor = mock(TestDescriptor.class);
+        TestConfigurer testConfigurer = mock(TestConfigurer.class);
+        MockProvider mockProvider = mock(MockProvider.class);
+        Map<String, Object> properties = SettingUtil.INSTANCE.getSettings();
+        Map<String, String> dependencies = mock(Map.class);
+        String[] envs = new String[]{
+            "CASSANDRA_SEEDS=${testcluster1.networkSettings().ipAddress()}",
+            "CASSANDRA_START_RPC=true"
+        };
+        int[] ports = new int[] {7000, 9042, 7199, 9160};
+
+        testContext = new DefaultTestContextBuilder()
+                .resourceStartStrategy(resourceStartStrategy)
+                .testInstance(testInstance)
+                .testDescriptor(testDescriptor)
+                .testMethodDescriptor(methodDescriptor)
+                .testConfigurer(testConfigurer)
+                .mockProvider(mockProvider)
+                .properties(properties)
+                .dependencies(dependencies)
+                .build();
+
+        given(virtualResource.value()).willReturn("cassandra");
+        given(virtualResource.version()).willReturn("3.11.0");
+        given(virtualResource.name()).willReturn("testcluster");
+        given(virtualResource.nodes()).willReturn(2);
+        given(virtualResource.link()).willReturn(true);
+        given(virtualResource.env()).willReturn(envs);
+        given(virtualResource.ports()).willReturn(ports);
+        given(testContext.getTestName()).willReturn("TestClass");
+        given(testContext.getMethodName()).willReturn("testMethod");
+
+        PropertiesReader reader = new DefaultPropertiesReader(properties);
+        PropertiesReader dockerReader = reader.getPropertiesReader("docker");
+
+        RegistryAuth registryAuth = RegistryAuth.builder()
+                .email(dockerReader.getProperty("email"))
+                .username(dockerReader.getProperty("username"))
+                .password(dockerReader.getProperty("password"))
+                .serverAddress(dockerReader.getProperty("uri"))
+                .build();
+
+        RegistryAuthSupplier dockerHubAuthSupplier = new DockerHubRegistryAuthSupplier(registryAuth);
+        DefaultDockerClient.Builder builder = DefaultDockerClient.fromEnv()
+                .registryAuthSupplier(dockerHubAuthSupplier);
+        VirtualResourceInstance result = sut.start(testContext, virtualResource, builder);
+
+        assertThat(result).isNotNull();
+
+        sut.stop(testContext, virtualResource, result);
     }
 
 }
