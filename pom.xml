@@ -23,7 +23,7 @@
 
     <groupId>org.testifyproject.virtual-resources</groupId>
     <artifactId>parent</artifactId>
-    <version>0.9.3-SNAPSHOT</version>
+    <version>0.9.3</version>
     <packaging>pom</packaging>
     
     <name>Virtual Resources</name>
@@ -48,7 +48,7 @@
         <netbeans.inceptionYear>2016</netbeans.inceptionYear>
 
         <!-- Build Dependency Versions -->
-        <testify.version>0.9.7-SNAPSHOT</testify.version>
+        <testify.version>0.9.7</testify.version>
         <buildtools.version>0.9.7</buildtools.version>
 
         <!-- Plugin Versions -->

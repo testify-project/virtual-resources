@@ -13,6 +13,17 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 
+## [0.9.3] - 2017-07-29
+### Added
+- Support for:
+ - Clustering virtual resources
+ - Linking virtual resources
+ - Passing environmental variables to virtual resources
+ - Waiting for specific ports
+
+### Changed 
+- Updated Testify API to version 0.9.7
+
 ## [0.9.2] - 2017-07-16
 ### Changed 
 - Updated fully qualified of VirtualResourceInstance from just image name to image name plus image tag (i.e. `postgres:9.4`)
