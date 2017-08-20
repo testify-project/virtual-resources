@@ -13,6 +13,10 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 
+## [0.9.4-SNAPSHOT] - 2017-08-20
+### Fixed
+- Fixed issue with containers not being stopped and removed
+
 ## [0.9.3] - 2017-07-29
 ### Added
 - Support for:
