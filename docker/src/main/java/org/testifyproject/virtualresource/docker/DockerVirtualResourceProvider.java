@@ -102,7 +102,7 @@ public class DockerVirtualResourceProvider
     @Override
     @SuppressWarnings("UseSpecificCatch")
     public VirtualResourceInstance start(TestContext testContext, VirtualResource virtualResource, DefaultDockerClient.Builder clientBuilder) {
-        if(started.compareAndSet(false, true)) {
+        if (started.compareAndSet(false, true)) {
             VirtualResourceInstance virtualResourceInstance = null;
             int nodes = virtualResource.nodes();
 
