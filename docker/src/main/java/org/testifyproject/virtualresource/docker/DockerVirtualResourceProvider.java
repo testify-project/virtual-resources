@@ -102,120 +102,112 @@ public class DockerVirtualResourceProvider
     @Override
     @SuppressWarnings("UseSpecificCatch")
     public VirtualResourceInstance start(TestContext testContext, VirtualResource virtualResource, DefaultDockerClient.Builder clientBuilder) {
-        VirtualResourceInstance virtualResourceInstance = null;
-        int nodes = virtualResource.nodes();
+        if(started.compareAndSet(false, true)) {
+            VirtualResourceInstance virtualResourceInstance = null;
+            int nodes = virtualResource.nodes();
 
-        try {
-            for (int i = 1; i <= nodes; i++) {
-                LoggingUtil.INSTANCE.info("Connecting to {}", clientBuilder.uri());
-                client = clientBuilder.build();
+            try {
+                for (int i = 1; i <= nodes; i++) {
+                    LoggingUtil.INSTANCE.info("Connecting to {}", clientBuilder.uri());
+                    client = clientBuilder.build();
 
-                String imageName = virtualResource.value();
-                String imageTag = getImageTag(virtualResource.version());
+                    String imageName = virtualResource.value();
+                    String imageTag = getImageTag(virtualResource.version());
 
-                String image = imageName + ":" + imageTag;
-                boolean imagePulled = isImagePulled(image, imageTag);
+                    String image = imageName + ":" + imageTag;
+                    boolean imagePulled = isImagePulled(image, imageTag);
 
-                if (virtualResource.pull() && !imagePulled) {
-                    pullImage(virtualResource, image);
-                }
+                    if (virtualResource.pull() && !imagePulled) {
+                        pullImage(virtualResource, image);
+                    }
 
-                ContainerConfig.Builder containerConfigBuilder
-                        = ContainerConfig.builder().image(image);
+                    ContainerConfig.Builder containerConfigBuilder
+                            = ContainerConfig.builder().image(image);
 
-                if (!virtualResource.cmd().isEmpty()) {
-                    containerConfigBuilder.cmd(virtualResource.cmd());
-                }
+                    if (!virtualResource.cmd().isEmpty()) {
+                        containerConfigBuilder.cmd(virtualResource.cmd());
+                    }
 
-                String containerName;
-                if (nodes == 1) {
-                    containerName = virtualResource.name().isEmpty()
-                            ? testContext.getName()
-                            : virtualResource.name();
-                } else {
-                    containerName = virtualResource.name().isEmpty()
-                            ? testContext.getName() + i
-                            : virtualResource.name() + i;
-                }
+                    String containerName;
+                    if (nodes == 1) {
+                        containerName = virtualResource.name().isEmpty()
+                                ? testContext.getName()
+                                : virtualResource.name();
+                    } else {
+                        containerName = virtualResource.name().isEmpty()
+                                ? testContext.getName() + i
+                                : virtualResource.name() + i;
+                    }
 
-                HostConfig.Builder hostConfigBuilder = HostConfig.builder();
+                    HostConfig.Builder hostConfigBuilder = HostConfig.builder();
 
-                if (virtualResource.link()) {
-                    List<String> containerNames = containerInfos.stream()
-                            .map(p -> p.name().replace("/", ""))
-                            .collect(toList());
+                    if (virtualResource.link()) {
+                        List<String> containerNames = containerInfos.stream()
+                                .map(p -> p.name().replace("/", ""))
+                                .collect(toList());
 
-                    hostConfigBuilder.links(containerNames);
-                }
+                        hostConfigBuilder.links(containerNames);
+                    }
 
-                for (String env : virtualResource.env()) {
-                    try {
-                        Map<String, Object> templateContext = containerInfos.stream()
-                                .collect(toMap(p -> p.name().replace("/", ""), p -> p));
-                        String evaluation = ExpressionUtil.INSTANCE.evaluateTemplate(env, templateContext);
-                        containerConfigBuilder.env(evaluation);
-                    } catch (Exception e) {
-                        LoggingUtil.INSTANCE.debug("Could not evaluate env '{}' as an expression ", env);
+                    for (String env : virtualResource.env()) {
+                        try {
+                            Map<String, Object> templateContext = containerInfos.stream()
+                                    .collect(toMap(p -> p.name().replace("/", ""), p -> p));
+                            String evaluation = ExpressionUtil.INSTANCE.evaluateTemplate(env, templateContext);
+                            containerConfigBuilder.env(evaluation);
+                        } catch (Exception e) {
+                            LoggingUtil.INSTANCE.debug("Could not evaluate env '{}' as an expression ", env);
+                        }
+                    }
+
+                    HostConfig hostConfig = hostConfigBuilder
+                            .publishAllPorts(true)
+                            .build();
+
+                    ContainerConfig containerConfig = containerConfigBuilder
+                            .hostConfig(hostConfig)
+                            .build();
+
+                    ContainerCreation containerCreation = client.createContainer(containerConfig, containerName);
+                    String containerId = containerCreation.id();
+                    client.startContainer(containerId);
+
+                    ContainerInfo containerInfo = client.inspectContainer(containerId);
+                    InetAddress containerAddress = InetAddresses.forString(containerInfo.networkSettings().ipAddress());
+                    Map<String, List<PortBinding>> containerPorts = containerInfo.networkSettings().ports();
+
+                    containerInfos.add(containerInfo);
+
+                    if (containerPorts != null) {
+                        Map<Integer, Integer> mappedPorts = containerPorts.entrySet().stream()
+                                .collect(collectingAndThen(toMap(
+                                        k -> Integer.valueOf(k.getKey().split("/")[0]),
+                                        v -> Integer.valueOf(v.getValue().get(0).hostPort())),
+                                        Collections::unmodifiableMap));
+
+                        if (virtualResource.await()) {
+                            waitForPorts(virtualResource, mappedPorts, containerAddress);
+                        }
+                    }
+
+                    //return the first node
+                    if (i == 1) {
+                        virtualResourceInstance = VirtualResourceInstanceBuilder.builder()
+                                .resource(containerAddress, InetAddress.class)
+                                .property(DockerProperties.DOCKER_CLIENT, client)
+                                .property(DockerProperties.DOCKER_CONTAINER, containerInfo)
+                                .build(image);
                     }
                 }
 
-                HostConfig hostConfig = hostConfigBuilder
-                        .publishAllPorts(true)
-                        .build();
-
-                ContainerConfig containerConfig = containerConfigBuilder
-                        .hostConfig(hostConfig)
-                        .build();
-
-                ContainerCreation containerCreation = client.createContainer(containerConfig, containerName);
-                String containerId = containerCreation.id();
-                client.startContainer(containerId);
-                started.compareAndSet(false, true);
-
-                ContainerInfo containerInfo = client.inspectContainer(containerId);
-                InetAddress containerAddress = InetAddresses.forString(containerInfo.networkSettings().ipAddress());
-                Map<String, List<PortBinding>> containerPorts = containerInfo.networkSettings().ports();
-
-                containerInfos.add(containerInfo);
-
-                if (containerPorts != null) {
-                    Map<Integer, Integer> mappedPorts = containerPorts.entrySet().stream()
-                            .collect(collectingAndThen(toMap(
-                                    k -> Integer.valueOf(k.getKey().split("/")[0]),
-                                    v -> Integer.valueOf(v.getValue().get(0).hostPort())),
-                                    Collections::unmodifiableMap));
-
-                    if (virtualResource.await()) {
-                        waitForPorts(virtualResource, mappedPorts, containerAddress);
-                    }
-                }
-
-                //return the first node
-                if (i == 1) {
-                    virtualResourceInstance = VirtualResourceInstanceBuilder.builder()
-                            .resource(containerAddress, InetAddress.class)
-                            .property(DockerProperties.DOCKER_CLIENT, client)
-                            .property(DockerProperties.DOCKER_CONTAINER, containerInfo)
-                            .build(image);
-                }
+                return virtualResourceInstance;
+            } catch (Exception e) {
+                stop(testContext, virtualResource, virtualResourceInstance);
+                throw ExceptionUtil.INSTANCE.propagate(e);
             }
-
-            return virtualResourceInstance;
-        } catch (Exception e) {
-            stop(testContext, virtualResource, virtualResourceInstance);
-            throw ExceptionUtil.INSTANCE.propagate(e);
-        } finally {
-            //Last ditch effort to stop the container
-            VirtualResourceInstance instance = virtualResourceInstance;
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    if (started.compareAndSet(true, false)) {
-                        DockerVirtualResourceProvider.this.stop(testContext, virtualResource, instance);
-                    }
-                }
-            });
         }
+
+        throw ExceptionUtil.INSTANCE.propagate("Docker containers already started.");
     }
 
     @Override
