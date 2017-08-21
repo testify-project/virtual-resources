@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
@@ -129,14 +130,15 @@ public class DockerVirtualResourceProvider
                     }
 
                     String containerName;
+
                     if (nodes == 1) {
                         containerName = virtualResource.name().isEmpty()
-                                ? testContext.getName()
-                                : virtualResource.name();
+                                ? String.format("%s-%s", testContext.getName(), UUID.randomUUID().toString())
+                                : String.format("%s-%s", virtualResource.name(), UUID.randomUUID().toString());
                     } else {
                         containerName = virtualResource.name().isEmpty()
-                                ? testContext.getName() + i
-                                : virtualResource.name() + i;
+                                ? String.format("%s-%d-%s", testContext.getName(), i, UUID.randomUUID().toString())
+                                : String.format("%s-%d-%s", virtualResource.name(), i, UUID.randomUUID().toString());
                     }
 
                     HostConfig.Builder hostConfigBuilder = HostConfig.builder();
