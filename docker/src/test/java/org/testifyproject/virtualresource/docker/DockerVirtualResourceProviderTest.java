@@ -24,7 +24,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import org.testifyproject.MethodDescriptor;
 import org.testifyproject.MockProvider;
-import org.testifyproject.StartStrategy;
 import org.testifyproject.TestConfigurer;
 import org.testifyproject.TestContext;
 import org.testifyproject.TestDescriptor;
@@ -74,7 +73,6 @@ public class DockerVirtualResourceProviderTest {
 
     @Test
     public void givenStandardConfigurationStartAndStopContainerShouldSucceed() throws DockerCertificateException {
-        StartStrategy resourceStartStrategy = StartStrategy.EAGER;
         Object testInstance = new Object();
         MethodDescriptor methodDescriptor = mock(MethodDescriptor.class);
         TestDescriptor testDescriptor = mock(TestDescriptor.class);
@@ -84,7 +82,6 @@ public class DockerVirtualResourceProviderTest {
         Map<String, String> dependencies = mock(Map.class);
 
         testContext = new DefaultTestContextBuilder()
-                .resourceStartStrategy(resourceStartStrategy)
                 .testInstance(testInstance)
                 .testDescriptor(testDescriptor)
                 .testMethodDescriptor(methodDescriptor)
@@ -121,7 +118,6 @@ public class DockerVirtualResourceProviderTest {
 
     @Test
     public void givenMultiNodeConfigurationStartAndStopContainerShouldSucceed() throws DockerCertificateException {
-        StartStrategy resourceStartStrategy = StartStrategy.EAGER;
         Object testInstance = new Object();
         MethodDescriptor methodDescriptor = mock(MethodDescriptor.class);
         TestDescriptor testDescriptor = mock(TestDescriptor.class);
@@ -136,7 +132,6 @@ public class DockerVirtualResourceProviderTest {
         int[] ports = new int[] {7000, 9042, 7199, 9160};
 
         testContext = new DefaultTestContextBuilder()
-                .resourceStartStrategy(resourceStartStrategy)
                 .testInstance(testInstance)
                 .testDescriptor(testDescriptor)
                 .testMethodDescriptor(methodDescriptor)
