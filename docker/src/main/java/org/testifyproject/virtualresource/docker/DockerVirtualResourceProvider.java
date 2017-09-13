@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -51,6 +50,7 @@ import org.testifyproject.spotify.docker.client.messages.RegistryAuth;
 import org.testifyproject.spotify.docker.client.messages.RegistryAuthSupplier;
 import org.testifyproject.tools.Discoverable;
 import org.testifyproject.trait.PropertiesReader;
+import static org.testifyproject.virtualresource.docker.DockerProperties.DOCKER_CONTAINERS;
 
 /**
  * A Docker implementation of {@link VirtualResourceProvider SPI Contract}.
@@ -66,7 +66,6 @@ public class DockerVirtualResourceProvider
 
     private DefaultDockerClient client;
     private final AtomicBoolean started = new AtomicBoolean(false);
-    private final List<ContainerInfo> containerInfos = new LinkedList();
 
     @Override
     public DefaultDockerClient.Builder configure(TestContext testContext, VirtualResource virtualResource, PropertiesReader configReader) {
@@ -144,17 +143,22 @@ public class DockerVirtualResourceProvider
                     HostConfig.Builder hostConfigBuilder = HostConfig.builder();
 
                     if (virtualResource.link()) {
-                        List<String> containerNames = containerInfos.stream()
-                                .map(p -> p.name().replace("/", ""))
-                                .collect(toList());
+                        List<String> containerNames
+                                = testContext.<ContainerInfo>findCollection(DOCKER_CONTAINERS)
+                                        .stream()
+                                        .map(p -> p.name().replace("/", ""))
+                                        .collect(toList());
 
                         hostConfigBuilder.links(containerNames);
                     }
 
                     for (String env : virtualResource.env()) {
                         try {
-                            Map<String, Object> templateContext = containerInfos.stream()
-                                    .collect(toMap(p -> p.name().replace("/", ""), p -> p));
+                            Map<String, Object> templateContext
+                                    = testContext.<ContainerInfo>findCollection(DOCKER_CONTAINERS)
+                                            .stream()
+                                            .collect(toMap(p -> p.name().replace("/", ""), p -> p));
+
                             String evaluation = ExpressionUtil.INSTANCE.evaluateTemplate(env, templateContext);
                             containerConfigBuilder.env(evaluation);
                         } catch (Exception e) {
@@ -178,7 +182,7 @@ public class DockerVirtualResourceProvider
                     InetAddress containerAddress = InetAddresses.forString(containerInfo.networkSettings().ipAddress());
                     Map<String, List<PortBinding>> containerPorts = containerInfo.networkSettings().ports();
 
-                    containerInfos.add(containerInfo);
+                    testContext.addCollectionElement(DOCKER_CONTAINERS, containerInfo);
 
                     if (containerPorts != null) {
                         Map<Integer, Integer> mappedPorts = containerPorts.entrySet().stream()
@@ -216,14 +220,15 @@ public class DockerVirtualResourceProvider
     public void stop(TestContext testContext, VirtualResource virtualResource, VirtualResourceInstance instance) {
         try {
             if (started.compareAndSet(true, false)) {
-                containerInfos.stream().map(p -> p.id()).forEachOrdered(containerId -> {
-                    LoggingUtil.INSTANCE.info("Stopping and Removing Docker Container {}", containerId);
-                    RetryPolicy retryPolicy = new RetryPolicy()
-                            .retryOn(Throwable.class)
-                            .withBackoff(virtualResource.delay(), virtualResource.maxDelay(), virtualResource.unit());
+                testContext.<ContainerInfo>findCollection(DOCKER_CONTAINERS).stream().map(p -> p.id())
+                        .forEachOrdered(containerId -> {
+                            LoggingUtil.INSTANCE.info("Stopping and Removing Docker Container {}", containerId);
+                            RetryPolicy retryPolicy = new RetryPolicy()
+                                    .retryOn(Throwable.class)
+                                    .withBackoff(virtualResource.delay(), virtualResource.maxDelay(), virtualResource.unit());
 
-                    stopContainer(containerId, retryPolicy);
-                });
+                            stopContainer(containerId, retryPolicy);
+                        });
             }
         } finally {
             if (client != null) {
