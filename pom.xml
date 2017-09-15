@@ -47,7 +47,7 @@
 
         <!-- Build Dependency Versions -->
         <testify.version>0.9.9-SNAPSHOT</testify.version>
-        <buildtools.version>0.9.7</buildtools.version>
+        <buildtools.version>0.9.8-SNAPSHOT</buildtools.version>
 
         <!-- Plugin Versions -->
         <plugin.resource>3.0.1</plugin.resource>
@@ -475,7 +475,7 @@
                     </dependencies>
                     <configuration>
                         <configLocation>testify_checkstyle.xml</configLocation>
-<!--                        <suppressionsLocation>testify_supressions.xml</suppressionsLocation>-->
+                        <suppressionsLocation>testify_supressions.xml</suppressionsLocation>
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
                     </configuration>
