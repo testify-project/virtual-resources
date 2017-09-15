@@ -24,14 +24,19 @@ package org.testifyproject.virtualresource.docker;
 public class DockerProperties {
 
     /**
-     * Docker Client property key.
+     * Docker client property key.
      */
-    public static final String DOCKER_CLIENT = "docker/client";
+    public static final String DOCKER_CLIENT = "dockerClient";
 
     /**
-     * Docker Started Container property key.
+     * Docker container property key.
      */
-    public static final String DOCKER_CONTAINER = "docker/container";
+    public static final String DOCKER_CONTAINER = "dockerContainer";
+
+    /**
+     * Docker containers property key.
+     */
+    public static final String DOCKER_CONTAINERS = "dockerContainers";
 
     private DockerProperties() {
     }

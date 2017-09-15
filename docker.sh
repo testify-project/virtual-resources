@@ -58,8 +58,11 @@ case "$1" in
     # Wait a minute so we can see more docker logs in case something goes wrong
     sleep 60
 
-    echo "Testing Docker HTTP Endpoint"
+    echo "Testing TCP Docker HTTP Endpoint"
     docker -H tcp://127.0.0.1:2375 ps
+
+    echo "Testing Unix Docker HTTP Endpoint"
+    docker -H unix:///var/run/docker.sock ps
 
     ;;
 
