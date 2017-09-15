@@ -13,6 +13,10 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 
+## [0.9.5] - 2017-09-15
+### Changed
+Updated versions of Testify and Build-Tools dependencies
+
 ## [0.9.4] - 2017-08-20
 ### Fixed
 - Fixed issue with containers not being stopped and removed
