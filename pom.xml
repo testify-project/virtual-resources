@@ -46,8 +46,8 @@
         <netbeans.hint.license>apache20</netbeans.hint.license>
 
         <!-- Build Dependency Versions -->
-        <testify.version>0.9.9</testify.version>
-        <buildtools.version>0.9.8</buildtools.version>
+        <testify.version>1.0.0-SNAPSHOT</testify.version>
+        <buildtools.version>0.9.9-SNAPSHOT</buildtools.version>
 
         <!-- Plugin Versions -->
         <plugin.resource>3.0.1</plugin.resource>
@@ -622,11 +622,6 @@
         <dependency>
             <groupId>org.testifyproject.tools</groupId>
             <artifactId>test-logger</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.testifyproject.tools</groupId>
-            <artifactId>service-generator</artifactId>
-            <version>${buildtools.version}</version>
         </dependency>
         
         <!-- Test Deps -->

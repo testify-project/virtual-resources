@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.testifyproject.TestContext;
 import org.testifyproject.VirtualResourceInstance;
 import org.testifyproject.VirtualResourceProvider;
+import org.testifyproject.annotation.Discoverable;
 import org.testifyproject.annotation.VirtualResource;
 import org.testifyproject.core.VirtualResourceInstanceBuilder;
 import org.testifyproject.core.util.ExceptionUtil;
@@ -52,7 +53,6 @@ import org.testifyproject.spotify.docker.client.messages.HostConfig;
 import org.testifyproject.spotify.docker.client.messages.PortBinding;
 import org.testifyproject.spotify.docker.client.messages.RegistryAuth;
 import org.testifyproject.spotify.docker.client.messages.RegistryAuthSupplier;
-import org.testifyproject.tools.Discoverable;
 import org.testifyproject.trait.PropertiesReader;
 
 /**
