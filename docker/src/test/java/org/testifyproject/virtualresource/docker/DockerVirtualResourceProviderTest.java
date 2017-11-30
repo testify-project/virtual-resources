@@ -34,12 +34,13 @@ import org.testifyproject.annotation.VirtualResource;
 import org.testifyproject.core.DefaultTestContextBuilder;
 import org.testifyproject.core.util.ReflectionUtil;
 import org.testifyproject.core.util.SettingUtil;
-import org.testifyproject.spotify.docker.client.DefaultDockerClient;
-import org.testifyproject.spotify.docker.client.exceptions.DockerCertificateException;
-import org.testifyproject.spotify.docker.client.messages.RegistryAuth;
-import org.testifyproject.spotify.docker.client.messages.RegistryAuthSupplier;
 import org.testifyproject.trait.DefaultPropertiesReader;
 import org.testifyproject.trait.PropertiesReader;
+
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.auth.RegistryAuthSupplier;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
+import com.spotify.docker.client.messages.RegistryAuth;
 
 /**
  *

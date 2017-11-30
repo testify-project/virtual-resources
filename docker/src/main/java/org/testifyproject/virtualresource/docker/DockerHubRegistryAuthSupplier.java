@@ -15,10 +15,11 @@
  */
 package org.testifyproject.virtualresource.docker;
 
-import org.testifyproject.spotify.docker.client.exceptions.DockerException;
-import org.testifyproject.spotify.docker.client.messages.RegistryAuth;
-import org.testifyproject.spotify.docker.client.messages.RegistryAuthSupplier;
-import org.testifyproject.spotify.docker.client.messages.RegistryConfigs;
+
+import com.spotify.docker.client.auth.RegistryAuthSupplier;
+import com.spotify.docker.client.exceptions.DockerException;
+import com.spotify.docker.client.messages.RegistryAuth;
+import com.spotify.docker.client.messages.RegistryConfigs;
 
 /**
  * Docker hub authentication supplier implementation.

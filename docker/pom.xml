@@ -33,24 +33,20 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <docker.client.version>8.9.2</docker.client.version>
+        <failsafe.version>1.0.4</failsafe.version>
     </properties>
     
     <dependencies>
         <dependency>
-            <groupId>org.testifyproject.external</groupId>
-            <artifactId>external-failsafe</artifactId>
-            <version>${buildtools.version}</version>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-client</artifactId>
+            <version>${docker.client.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.testifyproject.external</groupId>
-            <artifactId>external-docker-client</artifactId>
-            <version>${buildtools.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>net.jodah</groupId>
+            <artifactId>failsafe</artifactId>
+            <version>${failsafe.version}</version>
         </dependency>
     </dependencies>
 </project>

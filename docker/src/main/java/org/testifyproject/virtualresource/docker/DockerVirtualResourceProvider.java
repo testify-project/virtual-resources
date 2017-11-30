@@ -39,21 +39,23 @@ import org.testifyproject.core.VirtualResourceInstanceBuilder;
 import org.testifyproject.core.util.ExceptionUtil;
 import org.testifyproject.core.util.ExpressionUtil;
 import org.testifyproject.core.util.LoggingUtil;
-import org.testifyproject.failsafe.Failsafe;
-import org.testifyproject.failsafe.RetryPolicy;
 import org.testifyproject.guava.common.net.InetAddresses;
-import org.testifyproject.spotify.docker.client.AnsiProgressHandler;
-import org.testifyproject.spotify.docker.client.DefaultDockerClient;
-import org.testifyproject.spotify.docker.client.exceptions.DockerCertificateException;
-import org.testifyproject.spotify.docker.client.exceptions.DockerException;
-import org.testifyproject.spotify.docker.client.messages.ContainerConfig;
-import org.testifyproject.spotify.docker.client.messages.ContainerCreation;
-import org.testifyproject.spotify.docker.client.messages.ContainerInfo;
-import org.testifyproject.spotify.docker.client.messages.HostConfig;
-import org.testifyproject.spotify.docker.client.messages.PortBinding;
-import org.testifyproject.spotify.docker.client.messages.RegistryAuth;
-import org.testifyproject.spotify.docker.client.messages.RegistryAuthSupplier;
 import org.testifyproject.trait.PropertiesReader;
+
+import com.spotify.docker.client.AnsiProgressHandler;
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.auth.RegistryAuthSupplier;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
+import com.spotify.docker.client.exceptions.DockerException;
+import com.spotify.docker.client.messages.ContainerConfig;
+import com.spotify.docker.client.messages.ContainerCreation;
+import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.HostConfig;
+import com.spotify.docker.client.messages.PortBinding;
+import com.spotify.docker.client.messages.RegistryAuth;
+
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 
 /**
  * A Docker implementation of {@link VirtualResourceProvider SPI Contract}.
