@@ -85,7 +85,6 @@ public class DockerVirtualResourceProviderTest {
         TestConfigurer testConfigurer = mock(TestConfigurer.class);
         MockProvider mockProvider = mock(MockProvider.class);
         Map<String, Object> properties = SettingUtil.INSTANCE.getSettings();
-        Map<String, String> dependencies = mock(Map.class);
 
         testContext = new DefaultTestContextBuilder()
                 .testInstance(testInstance)
@@ -94,7 +93,6 @@ public class DockerVirtualResourceProviderTest {
                 .testConfigurer(testConfigurer)
                 .mockProvider(mockProvider)
                 .properties(properties)
-                .dependencies(dependencies)
                 .build();
 
         given(virtualResource.value()).willReturn("postgres");
@@ -146,7 +144,6 @@ public class DockerVirtualResourceProviderTest {
                 .testConfigurer(testConfigurer)
                 .mockProvider(mockProvider)
                 .properties(properties)
-                .dependencies(dependencies)
                 .build();
 
         given(virtualResource.value()).willReturn("cassandra");
