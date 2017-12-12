@@ -35,7 +35,20 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <docker.client.version>8.9.2</docker.client.version>
         <failsafe.version>1.0.4</failsafe.version>
+        <jersey.version>2.26</jersey.version>
     </properties>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.glassfish.jersey</groupId>
+                <artifactId>jersey-bom</artifactId>
+                <version>${jersey.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     
     <dependencies>
         <dependency>
@@ -43,10 +56,33 @@
             <artifactId>docker-client</artifactId>
             <version>${docker.client.version}</version>
         </dependency>
+        <!-- 
+            Explicitly declare spotify docker Jersey Dependencies to match Jersey supported
+            version to avoid version conflicts.
+        -->
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.connectors</groupId>
+            <artifactId>jersey-apache-connector</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+        </dependency>
+
+        <!-- Misc Dependencies -->
         <dependency>
             <groupId>net.jodah</groupId>
             <artifactId>failsafe</artifactId>
             <version>${failsafe.version}</version>
         </dependency>
+        
     </dependencies>
 </project>
