@@ -26,7 +26,7 @@
     <version>0.9.6-SNAPSHOT</version>
     <packaging>pom</packaging>
     
-    <name>Virtual Resources</name>
+    <name>[Virtual Resources]</name>
     <description>Parent module of reusable Testify VirtualResourceProvider implementations</description>
     <url>https://github.com/testify-project/virtual-resources</url>
     
@@ -47,7 +47,7 @@
 
         <!-- Build Dependency Versions -->
         <testify.version>1.0.0-SNAPSHOT</testify.version>
-        <buildtools.version>0.9.9-SNAPSHOT</buildtools.version>
+        <buildtools.version>1.0.0-SNAPSHOT</buildtools.version>
 
         <!-- Plugin Versions -->
         <plugin.resource>3.0.1</plugin.resource>
@@ -679,7 +679,7 @@
                 <groupId>org.testifyproject.tools</groupId>
                 <artifactId>test-logger</artifactId>
                 <version>${buildtools.version}</version>
-                <scope>provided</scope>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
