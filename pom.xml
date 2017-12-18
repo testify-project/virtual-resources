@@ -23,7 +23,7 @@
 
     <groupId>org.testifyproject.virtual-resources</groupId>
     <artifactId>parent</artifactId>
-    <version>0.9.6-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>[Virtual Resources]</name>
@@ -47,8 +47,8 @@
         <netbeans.hint.license>apache20</netbeans.hint.license>
 
         <!-- Build Dependency Versions -->
-        <testify.version>1.0.0-SNAPSHOT</testify.version>
-        <buildtools.version>1.0.0-SNAPSHOT</buildtools.version>
+        <testify.version>1.0.0</testify.version>
+        <buildtools.version>1.0.0</buildtools.version>
 
         <!-- Plugin Versions -->
         <plugin.resource>3.0.1</plugin.resource>
@@ -72,9 +72,8 @@
 
         <!-- Test Dependencies -->
         <junit.version>4.12</junit.version>
-        <testng.version>6.9.10</testng.version>
-        <mockito.version>2.5.4</mockito.version>
-        <assertj.version>3.5.2</assertj.version>
+        <mockito.version>2.11.0</mockito.version>
+        <assertj.version>3.8.0</assertj.version>
 
     </properties>
 
@@ -656,12 +655,6 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.testng</groupId>
-                <artifactId>testng</artifactId>
-                <version>${testng.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
