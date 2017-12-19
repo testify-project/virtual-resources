@@ -13,6 +13,13 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 
+## [1.0.0] - 2017-12-18
+### Added
+- Added virtual resources BOM module
+
+### Changed
+- Updated Testify Dependency to version 1.0.0
+
 ## [0.9.5] - 2017-09-15
 ### Changed
 Updated versions of Testify and Build-Tools dependencies

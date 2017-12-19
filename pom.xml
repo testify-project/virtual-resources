@@ -23,15 +23,16 @@
 
     <groupId>org.testifyproject.virtual-resources</groupId>
     <artifactId>parent</artifactId>
-    <version>0.9.5</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
     
-    <name>Virtual Resources</name>
+    <name>[Virtual Resources]</name>
     <description>Parent module of reusable Testify VirtualResourceProvider implementations</description>
     <url>https://github.com/testify-project/virtual-resources</url>
     
     <modules>
         <module>docker</module>
+        <module>virtual-resources-bom</module>
     </modules>
     
     <properties>
@@ -46,8 +47,8 @@
         <netbeans.hint.license>apache20</netbeans.hint.license>
 
         <!-- Build Dependency Versions -->
-        <testify.version>0.9.9</testify.version>
-        <buildtools.version>0.9.8</buildtools.version>
+        <testify.version>1.0.0</testify.version>
+        <buildtools.version>1.0.0</buildtools.version>
 
         <!-- Plugin Versions -->
         <plugin.resource>3.0.1</plugin.resource>
@@ -71,9 +72,8 @@
 
         <!-- Test Dependencies -->
         <junit.version>4.12</junit.version>
-        <testng.version>6.9.10</testng.version>
-        <mockito.version>2.5.4</mockito.version>
-        <assertj.version>3.5.2</assertj.version>
+        <mockito.version>2.11.0</mockito.version>
+        <assertj.version>3.8.0</assertj.version>
 
     </properties>
 
@@ -623,11 +623,6 @@
             <groupId>org.testifyproject.tools</groupId>
             <artifactId>test-logger</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.testifyproject.tools</groupId>
-            <artifactId>service-generator</artifactId>
-            <version>${buildtools.version}</version>
-        </dependency>
         
         <!-- Test Deps -->
         <dependency>
@@ -663,12 +658,6 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>org.testng</groupId>
-                <artifactId>testng</artifactId>
-                <version>${testng.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
@@ -684,7 +673,7 @@
                 <groupId>org.testifyproject.tools</groupId>
                 <artifactId>test-logger</artifactId>
                 <version>${buildtools.version}</version>
-                <scope>provided</scope>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

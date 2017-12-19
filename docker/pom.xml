@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.testifyproject.virtual-resources</groupId>
         <artifactId>parent</artifactId>
-        <version>0.9.5</version>
+        <version>1.0.0</version>
     </parent>
     
     <artifactId>docker</artifactId>
@@ -33,24 +33,62 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <docker.client.version>8.9.2</docker.client.version>
+        <failsafe.version>1.0.4</failsafe.version>
+        <jersey.version>2.26</jersey.version>
+        <guava.version>23.2-jre</guava.version>
     </properties>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.glassfish.jersey</groupId>
+                <artifactId>jersey-bom</artifactId>
+                <version>${jersey.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     
     <dependencies>
         <dependency>
-            <groupId>org.testifyproject.external</groupId>
-            <artifactId>external-failsafe</artifactId>
-            <version>${buildtools.version}</version>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-client</artifactId>
+            <version>${docker.client.version}</version>
+        </dependency>
+        <!-- 
+            Explicitly declare spotify docker Jersey Dependencies to match Jersey supported
+            version to avoid version conflicts.
+        -->
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.testifyproject.external</groupId>
-            <artifactId>external-docker-client</artifactId>
-            <version>${buildtools.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.glassfish.jersey.connectors</groupId>
+            <artifactId>jersey-apache-connector</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+        
+        <!-- Misc Dependencies -->
+        <dependency>
+            <groupId>net.jodah</groupId>
+            <artifactId>failsafe</artifactId>
+            <version>${failsafe.version}</version>
+        </dependency>
+        
     </dependencies>
 </project>

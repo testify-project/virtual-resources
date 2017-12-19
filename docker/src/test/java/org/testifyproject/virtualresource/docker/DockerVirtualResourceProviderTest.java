@@ -34,12 +34,13 @@ import org.testifyproject.annotation.VirtualResource;
 import org.testifyproject.core.DefaultTestContextBuilder;
 import org.testifyproject.core.util.ReflectionUtil;
 import org.testifyproject.core.util.SettingUtil;
-import org.testifyproject.spotify.docker.client.DefaultDockerClient;
-import org.testifyproject.spotify.docker.client.exceptions.DockerCertificateException;
-import org.testifyproject.spotify.docker.client.messages.RegistryAuth;
-import org.testifyproject.spotify.docker.client.messages.RegistryAuthSupplier;
 import org.testifyproject.trait.DefaultPropertiesReader;
 import org.testifyproject.trait.PropertiesReader;
+
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.auth.RegistryAuthSupplier;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
+import com.spotify.docker.client.messages.RegistryAuth;
 
 /**
  *
@@ -84,7 +85,6 @@ public class DockerVirtualResourceProviderTest {
         TestConfigurer testConfigurer = mock(TestConfigurer.class);
         MockProvider mockProvider = mock(MockProvider.class);
         Map<String, Object> properties = SettingUtil.INSTANCE.getSettings();
-        Map<String, String> dependencies = mock(Map.class);
 
         testContext = new DefaultTestContextBuilder()
                 .testInstance(testInstance)
@@ -93,7 +93,6 @@ public class DockerVirtualResourceProviderTest {
                 .testConfigurer(testConfigurer)
                 .mockProvider(mockProvider)
                 .properties(properties)
-                .dependencies(dependencies)
                 .build();
 
         given(virtualResource.value()).willReturn("postgres");
@@ -145,7 +144,6 @@ public class DockerVirtualResourceProviderTest {
                 .testConfigurer(testConfigurer)
                 .mockProvider(mockProvider)
                 .properties(properties)
-                .dependencies(dependencies)
                 .build();
 
         given(virtualResource.value()).willReturn("cassandra");
