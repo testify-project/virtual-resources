@@ -47,7 +47,7 @@
         <netbeans.hint.license>apache20</netbeans.hint.license>
 
         <!-- Build Dependency Versions -->
-        <testify.version>1.0.0</testify.version>
+        <testify.version>1.0.1</testify.version>
         <buildtools.version>1.0.0</buildtools.version>
 
         <!-- Plugin Versions -->

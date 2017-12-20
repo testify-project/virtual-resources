@@ -38,6 +38,7 @@
                 <groupId>org.testifyproject.virtual-resources</groupId>
                 <artifactId>docker</artifactId>
                 <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
