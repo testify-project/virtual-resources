@@ -9,7 +9,7 @@ jdk: oraclejdk8
 services: docker
 
 notifications:
-    email: testifybot@gmail.com
+    email: testifyproject-devs@googlegroups.com
     on-success: change
     on-failure: always
 
