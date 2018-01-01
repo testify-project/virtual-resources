@@ -45,6 +45,7 @@
         <!-- IDE Properties -->
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
         <netbeans.hint.license>apache20</netbeans.hint.license>
+        <netbeans.inceptionYear>2016</netbeans.inceptionYear>
 
         <!-- Build Dependency Versions -->
         <testify.version>1.0.2-SNAPSHOT</testify.version>
@@ -424,6 +425,11 @@
                     </dependencies>
                     <configuration>
                         <header>license.txt</header>
+                        <errorMessage> Please insure the file(s) listed above:
+                            a) have a license header
+                            b) the header is formatted correctly
+                            c) the header contains the correct license year date range
+                        </errorMessage>
                         <properties>
                             <owner>${project.organization.name}</owner>
                         </properties>
