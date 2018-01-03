@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.testifyproject.virtual-resources</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0.2</version>
+        <version>1.0.3-SNAPSHOT</version>
     </parent>
     <artifactId>virtual-resources-bom</artifactId>
     <packaging>pom</packaging>
