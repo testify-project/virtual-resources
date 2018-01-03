@@ -13,6 +13,10 @@ was added, changed, deprecated, removed, fix and security fixes.
 
 ## [Unreleased]
 
+## [1.0.2] - 2018-01-03
+### Changed
+- Updated Testify Version
+
 ## [1.0.1] - 2017-12-19
 ### Fixed
 - Insured that `virtual-resources-bom` dependencies are test scoped.
