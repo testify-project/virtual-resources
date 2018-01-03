@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2016-2017 Testify Project.
+    Copyright 2016-2018 Testify Project.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 
     <groupId>org.testifyproject.virtual-resources</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>pom</packaging>
     
     <name>[Virtual Resources]</name>
@@ -45,10 +45,10 @@
         <!-- IDE Properties -->
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
         <netbeans.hint.license>apache20</netbeans.hint.license>
+        <netbeans.inceptionYear>2016</netbeans.inceptionYear>
 
         <!-- Build Dependency Versions -->
-        <testify.version>1.0.1</testify.version>
-        <buildtools.version>1.0.0</buildtools.version>
+        <testify.version>1.0.2</testify.version>
 
         <!-- Plugin Versions -->
         <plugin.resource>3.0.1</plugin.resource>
@@ -74,7 +74,8 @@
         <junit.version>4.12</junit.version>
         <mockito.version>2.11.0</mockito.version>
         <assertj.version>3.8.0</assertj.version>
-
+        <guava.version>23.2-jre</guava.version>
+        <failsafe.version>1.0.4</failsafe.version>
     </properties>
 
     <prerequisites>
@@ -409,6 +410,7 @@
                     <executions>
                         <execution>
                             <id>license-check</id>
+                            <phase>process-resources</phase>
                             <goals>
                                 <goal>check</goal>
                             </goals>
@@ -416,13 +418,18 @@
                     </executions>
                     <dependencies>
                         <dependency>
-                            <groupId>org.testifyproject.buildtools</groupId>
+                            <groupId>org.testifyproject.tools</groupId>
                             <artifactId>coding-conventions</artifactId>
-                            <version>${buildtools.version}</version>
+                            <version>${testify.version}</version>
                         </dependency>
                     </dependencies>
                     <configuration>
                         <header>license.txt</header>
+                        <errorMessage> Please insure the file(s) listed above:
+                            a) have a license header
+                            b) the header is formatted correctly
+                            c) the header contains the correct license year date range
+                        </errorMessage>
                         <properties>
                             <owner>${project.organization.name}</owner>
                         </properties>
@@ -437,11 +444,12 @@
                             <exclude>**/*.enc</exclude>
                             <exclude>**/*.tar</exclude>
                             <exclude>**/*.sh</exclude>
+                            <exclude>**/*.proto</exclude>
                             <exclude>**/settings.xml</exclude>
                             <exclude>**/nbactions.xml</exclude>
                             <exclude>LICENSE</exclude>
-                            <exclude>src/test/virtual-resources/**</exclude>
-                            <exclude>src/main/virtual-resources/**</exclude>
+                            <exclude>src/test/resources/**</exclude>
+                            <exclude>src/main/resources/**</exclude>
                             <exclude>nbproject/**</exclude>
                             <exclude>secrets/**</exclude>
                             <exclude>archetype.properties</exclude>
@@ -464,9 +472,9 @@
                     </executions>
                     <dependencies>
                         <dependency>
-                            <groupId>org.testifyproject.buildtools</groupId>
+                            <groupId>org.testifyproject.tools</groupId>
                             <artifactId>coding-conventions</artifactId>
-                            <version>${buildtools.version}</version>
+                            <version>${testify.version}</version>
                         </dependency>
                     </dependencies>
                     <configuration>
@@ -597,86 +605,74 @@
             </plugin>
         </plugins>
     </reporting>
-
-    <dependencies>
-        <!-- Testify Dependencies -->
-        <dependency>
-            <groupId>org.testifyproject</groupId>
-            <artifactId>api</artifactId>
-            <version>${testify.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testifyproject</groupId>
-            <artifactId>core</artifactId>
-            <version>${testify.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        
-        <!-- Tools -->
-        <dependency>
-            <groupId>org.testifyproject.external</groupId>
-            <artifactId>external-guava</artifactId>
-            <version>${buildtools.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.testifyproject.tools</groupId>
-            <artifactId>test-logger</artifactId>
-        </dependency>
-        
-        <!-- Test Deps -->
-        <dependency>
-            <groupId>org.testifyproject.junit4</groupId>
-            <artifactId>unit-test</artifactId>
-            <version>${testify.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
+    
     <dependencyManagement>
         <dependencies>
-            <!-- Testing Dependencies -->
+            <!-- Testify Dependencies -->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
+                <groupId>org.testifyproject</groupId>
+                <artifactId>api</artifactId>
+                <version>${testify.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${mockito.version}</version>
+                <groupId>org.testifyproject</groupId>
+                <artifactId>core</artifactId>
+                <version>${testify.version}</version>
                 <scope>provided</scope>
             </dependency>
+            
+            <!-- Test Dependencies -->
+            <dependency>
+                <groupId>org.testifyproject.junit4</groupId>
+                <artifactId>unit-test</artifactId>
+                <version>${testify.version}</version>
+                <scope>test</scope>
+            </dependency>            
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj.version}</version>
-                <scope>provided</scope>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.testifyproject.tools</groupId>
                 <artifactId>test-logger</artifactId>
-                <version>${buildtools.version}</version>
+                <version>${testify.version}</version>
                 <scope>test</scope>
+            </dependency>
+            
+            <!-- Misc Dependencies -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.jodah</groupId>
+                <artifactId>failsafe</artifactId>
+                <version>${failsafe.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
+    
+    <dependencies>
+        <!-- Test Deps -->
+        <dependency>
+            <groupId>org.testifyproject.junit4</groupId>
+            <artifactId>unit-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        
+        <!-- Tools -->
+        <dependency>
+            <groupId>org.testifyproject.tools</groupId>
+            <artifactId>test-logger</artifactId>
+        </dependency>
+    </dependencies>
 
     <profiles>
         <!-- Default Development Profile -->
